@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: hello-wefox
+  name: hello-wefox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-wefox
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-wefox
+    spec:
+      containers:
+      - image: docker.io/hashicorp/http-echo:0.2.1
+        name: http-echo
+        args: ["-text='hello world'"]
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: hello-wefox
+  name: hello-wefox
+spec:
+  ports:
+  - port: 5678
+    protocol: TCP
+    targetPort: 5678
+    nodePort: 8081
+  selector:
+    app: hello-wefox
+  type: NodePort
+status:
+  loadBalancer: {}
