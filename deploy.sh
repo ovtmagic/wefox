@@ -17,24 +17,21 @@ function install_minikube(){
     if [[ "$(uname)" =~ "Linux" ]]; then
         curl -LO ${Linux_MINIKUBE}
         sudo install minikube-linux-amd64 /usr/local/bin/minikube
-    elif [[ "$(uname)" =~ "DARWIN" ]]; then
+        #sudo -i minikube start --vm-driver=none --extra-config=apiserver.service-node-port-range=8000-32767
+    elif [[ "$(uname)" =~ "Darwin" ]]; then
         curl -LO ${DARWING_MINIKUBE}
         sudo install minikube-darwin-amd64 /usr/local/bin/minikube
+        #minikube start --driver=docker --extra-config=apiserver.service-node-port-range=8000-32767 --profile=wefox-challenge-cluster
     else
         _exit 1 "$(uname) is not supported" 1
     fi
-    #sudo -i minikube start --vm-driver=none --extra-config=apiserver.service-node-port-range=8000-32767 --profile=wefox-challenge-cluster && _exit "Error startting minikube" 1
-    sudo -i minikube start --vm-driver=none --extra-config=apiserver.service-node-port-range=8000-32767
+    minikube start --driver=docker --extra-config=apiserver.service-node-port-range=8000-32767 --profile=wefox-challenge-cluster
     return $?
 }
 
 function prepare_environment(){
-    install_minikube || _exit "Error startting minikube" 1
-    grep -q "${SVC_FQDN}" /etc/hosts || echo "127.0.0.1 ${SVC_FQDN}" | sudo tee -a /etc/hosts
-    sudo -i kubectl config view --flatten > /tmp/config
-    mkdir -p ${HOME}/.kube
-    sudo cp /tmp/config ${HOME}/.kube
-    chown $(id -u):$(id -g) ${HOME}/.kube/config
+    install_minikube || _exit "Error starting minikube" 1
+    grep -q "${SVC_FQDN}" /etc/hosts || echo "$(minikube ip -p wefox-challenge-cluster) ${SVC_FQDN}" | sudo tee -a /etc/hosts
 }
 
 function deploy(){
